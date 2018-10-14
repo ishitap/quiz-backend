@@ -1,7 +1,9 @@
-const router = require('express').Router();
-const passport = require('passport');
-const Quiz = require('../models/quiz.model');
-const Question = require('../models/question.model');
+const router = require('express').Router()
+const passport = require('passport')
+const Quiz = require('../models/quiz.model')
+const Question = require('../models/question.model')
+
+const auth = passport.authenticate('jwt', { session: false })
 
 // shorthand for an error
 const error = (res, errno, json) => {
@@ -12,7 +14,7 @@ const error = (res, errno, json) => {
 // --- CREATE
 
 // create quiz
-router.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
+router.post('/', auth, (req, res) => {
     let quiz = new Quiz({
         title: req.body.title,
         user: req.user._id,
@@ -25,7 +27,7 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
 })
 
 // create question
-router.post('/:id/questions', passport.authenticate('jwt', { session: false }), (req, res) => {
+router.post('/:id/questions', auth, (req, res) => {
     let question = {
         title: req.body.title,
         options: req.body.options || [],
@@ -46,7 +48,7 @@ router.post('/:id/questions', passport.authenticate('jwt', { session: false }), 
 // --- READ
 
 // list quizzes
-router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => {
+router.get('/', auth, (req, res) => {
     Quiz.find({ user: req.user._id }, (e, d) => {
         if (e) return next(e)
         res.send(d)
@@ -54,7 +56,7 @@ router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => 
 })
 
 // get single quiz
-router.get('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+router.get('/:id', auth, (req, res) => {
     Quiz.findOne({ user: req.user._id, _id: req.params.id }, '-questions', (e, d) => {
         if (e) return next(e)
         res.send(d)
@@ -62,7 +64,7 @@ router.get('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
 })
 
 // list questions of quiz:id
-router.get('/:id/questions', passport.authenticate('jwt', { session: false }), (req, res) => {
+router.get('/:id/questions', auth, (req, res) => {
     Quiz.findOne({ user: req.user._id, _id: req.params.id }, 'questions', (e, d) => {
         if (e) return next(e)
         res.send(d)
@@ -72,7 +74,7 @@ router.get('/:id/questions', passport.authenticate('jwt', { session: false }), (
 // --- UPDATE
 
 // update quiz
-router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) => {
+router.put('/:id', auth, (req, res) => {
     let quiz = Quiz.findOneAndUpdate(
         { user: req.user._id, _id: req.params.id },
         { $set: req.body }, 
@@ -85,9 +87,9 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), (req, res) 
 })
 
 // update question
-router.put('/:id/questions/:question_id', passport.authenticate('jwt', { session: false }), (req, res) => {
+router.put('/:id/questions/:question_id', auth, (req, res) => {
     let question = Question.findOneAndUpdate(
-        { _id: req.params.question_id },
+        { _id: req.params.question_id }, // TODO: validate by user, too
         { $set: req.body }, 
         { upsert: false, new: true }, 
         (e, d) => {
@@ -97,14 +99,14 @@ router.put('/:id/questions/:question_id', passport.authenticate('jwt', { session
     )
 })
 
-// --- DESTROY
+// --- DESTROY // TODO
 
 
-router.get('/test', passport.authenticate('jwt', { session: false }), (req, res) => {
+router.get('/test', auth, (req, res) => {
     return res.json({
         id: req.user.id,
         username: req.user.username,
-    });
-});
+    })
+})
 
-module.exports = router;
+module.exports = router
