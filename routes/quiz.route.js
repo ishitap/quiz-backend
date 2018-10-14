@@ -20,9 +20,11 @@ router.post('/', auth, (req, res) => {
         user: req.user._id,
     })
 
-    quiz.save(function (err) {
-        if (err) return next(err)
-        res.send('Quiz created successfully')
+    quiz.save((e, d) => {
+        if (e) {
+            return error(res, 500, { err: e})
+        }
+        res.send(d)
     })
 })
 
@@ -66,7 +68,9 @@ router.get('/:id', auth, (req, res) => {
 // list questions of quiz:id
 router.get('/:id/questions', auth, (req, res) => {
     Quiz.findOne({ user: req.user._id, _id: req.params.id }, 'questions', (e, d) => {
-        if (e) return next(e)
+        if (e) {
+            return error(res, 500, { err: e})
+        }
         res.send(d)
     })
 })
@@ -88,9 +92,13 @@ router.put('/:id', auth, (req, res) => {
 
 // update question
 router.put('/:id/questions/:question_id', auth, (req, res) => {
-    let question = Question.findOneAndUpdate(
-        { _id: req.params.question_id }, // TODO: validate by user, too
-        { $set: req.body }, 
+    let question = Quiz.findOneAndUpdate(
+        { 
+            user: req.user._id, 
+            _id: req.params.id, 
+            'questions._id': req.params.question_id 
+        }, 
+        { $set: { 'questions.$': req.body } }, 
         { upsert: false, new: true }, 
         (e, d) => {
             if (e) return next(e)
