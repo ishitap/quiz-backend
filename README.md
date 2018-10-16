@@ -14,6 +14,7 @@
 * limited to no error handling. If there is an error there is no helpful modal or other recovery route. Usually the data will just not save and the error is returned in the response body, just not printed out for the user. 
 * very few loading states currently
 * styling is very poor, and some not great UX decisions to make the app simpler (for example, instead of having a zero-state, I just automatically populate each new question with some options).
+* JWT times out after 3600s, but we can change this easily
 
 ## Frontend component tree
 - `App/`: entry point, router code is here
