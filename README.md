@@ -11,9 +11,10 @@
 * If, for whatever reason, your backend is not on localhost:5000, you can run `REACT_APP_BACKEND=your_backend npm start` instead of just `npm start`.
 
 ## Limitations
-* cannot register a user in the UI. to register a user POST to `/api/users/register` with `{ username, password }` in the request body
+* cannot register a user in the UI. to register a user POST to `/api/users/register` with `{ username, password }` in the request body. You can also use the username/password *ishita/ishita*.
 * limited to no error handling. If there is an error there is no helpful modal or other recovery route. Usually the data will just not save and the error is returned in the response body, just not printed out for the user. 
 * styling is very poor, and some not great UX decisions to make the app simpler
+* Heroku does not like certain types of redirects so they do not work on heroku. They work on local, however. Specifically when you delete a quiz, Heroku won't return you back to the main page, and when you refresh the page Heroku is also mad at you. I can fix this, just thought I'd share this with you before I got to that part.
 
 ## Frontend component tree
 - `App/`: entry point, router code is here
