@@ -3,7 +3,7 @@
 ## Deploying
 #### For the backend:
 * `git clone https://github.com/ishitap/quiz-backend.git && cd quiz-backend`
-* `npm install && node app-
+* `npm install && node app`
 
 #### For the frontend:
 * `git clone https://github.com/ishitap/quiz-frontend.git && cd quiz-frontend`
