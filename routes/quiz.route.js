@@ -41,7 +41,9 @@ router.post('/:id/questions', auth, (req, res) => {
         { $push: { questions: question } }, 
         { upsert: false, new: true }, 
         (e, d) => {
-            if (e) return next(e)
+            if (e) {
+                return error(res, 500, { err: e})
+            }
             res.send(d)
         }
     )
@@ -52,7 +54,9 @@ router.post('/:id/questions', auth, (req, res) => {
 // list quizzes
 router.get('/', auth, (req, res) => {
     Quiz.find({ user: req.user._id }, (e, d) => {
-        if (e) return next(e)
+        if (e) {
+            return error(res, 500, { err: e})
+        }
         res.send(d)
     })
 })
@@ -60,7 +64,9 @@ router.get('/', auth, (req, res) => {
 // get single quiz
 router.get('/:id', auth, (req, res) => {
     Quiz.findOne({ user: req.user._id, _id: req.params.id }, '-questions', (e, d) => {
-        if (e) return next(e)
+        if (e) {
+            return error(res, 500, { err: e})
+        }
         res.send(d)
     })
 })
@@ -79,36 +85,76 @@ router.get('/:id/questions', auth, (req, res) => {
 
 // update quiz
 router.put('/:id', auth, (req, res) => {
-    let quiz = Quiz.findOneAndUpdate(
-        { user: req.user._id, _id: req.params.id },
-        { $set: req.body }, 
-        { upsert: false, new: true }, 
-        (e, d) => {
-            if (e) return next(e)
-            res.send(d)
+    let quiz = Quiz.findOneAndUpdate({
+        user: req.user._id,
+        _id: req.params.id 
+    },{ 
+        $set: req.body 
+    }, { 
+        upsert: false, 
+        new: true 
+    }, (e, d) => {
+        if (e) {
+            return error(res, 500, { err: e})
         }
-    )
+        res.send(d)
+    })
 })
 
 // update question
 router.put('/:id/questions/:question_id', auth, (req, res) => {
-    let question = Quiz.findOneAndUpdate(
-        { 
-            user: req.user._id, 
-            _id: req.params.id, 
-            'questions._id': req.params.question_id 
-        }, 
-        { $set: { 'questions.$': req.body } }, 
-        { upsert: false, new: true }, 
-        (e, d) => {
-            if (e) return next(e)
-            res.send(d)
+    let question = Quiz.findOneAndUpdate({ 
+        user: req.user._id, 
+        _id: req.params.id, 
+        'questions._id': req.params.question_id 
+    }, { 
+        $set: { 'questions.$': req.body } 
+    }, { 
+        upsert: false, 
+        new: true 
+    }, (e, d) => {
+        if (e) {
+            return error(res, 500, { err: e})
         }
-    )
+        res.send(d)
+    })
 })
 
-// --- DESTROY // TODO
 
+// --- DESTROY
+
+router.delete('/:id', auth, (req, res) => {
+    Quiz.findOneAndRemove({
+        user: req.user._id,
+        _id: req.params.id
+    }, err => {
+        if (err) {
+            return error(res, 500, { err: err})
+        }
+        res.send({ success: true });
+    })
+})
+
+router.delete('/:id/questions/:question_id', auth, (req, res) => {
+    Quiz.findOneAndUpdate({
+        user: req.user._id,
+        _id: req.params.id,
+        'questions._id': req.params.question_id,
+    }, {
+        $pull: { questions: { _id: req.params.question_id } }
+    }, {
+        upsert: false,
+        new: true,
+    }, (e, d) => {
+        if (e) {
+            return error(res, 500, { e: e})
+        }
+        res.send({ success: true });
+    })
+})
+
+
+// --- TEST
 
 router.get('/test', auth, (req, res) => {
     return res.json({
